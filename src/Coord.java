@@ -15,6 +15,9 @@ final public class Coord {
 			this.y = y;
 			this.x = x;
 		}
+		/*
+		 * TODO should probably rewrite this, just here to be, well something
+		 */
 		@Override
 		public int hashCode(){
 			return (int) (x*Math.pow(2,16)+y);

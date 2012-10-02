@@ -13,19 +13,16 @@ import java.util.Set;
  *         Created Sep 20, 2012.
  */
 public class Board {
-	int sizeX, sizeY;
-	byte[][] board;	// ändra till byte array
+	byte[][] board;
 	Set<Coord> goals;
 	
 	
-	public Board(int x,int y,byte [] [] b, Set<Coord> g){
-		this.sizeX = x;
-		this.sizeY = y;
+	public Board(byte [] [] b, Set<Coord> g){
 		this.board = b;
 		this.goals = g;
 	}
 	public byte get(Coord c){
-		return board[c.x][c.y];
+		return board[c.y][c.x];
 	}
 	
 	
@@ -36,13 +33,13 @@ public class Board {
 	public void printBoard(){
 		System.out.println("Printing board without content");
 		System.out.print(" ");
-		for(int i=0;i<sizeX;i++){
+		for(int i=0;i<board[0].length;i++){
 			System.out.print(i);
 		}
 			System.out.println();
-		for(int y=0;y<sizeY;y++){
+		for(int y=0;y<board.length;y++){
 			System.out.print(y);
-			for(int x=0;x<sizeX;x++){
+			for(int x=0;x<board[0].length;x++){
 				System.out.print(board[x][y]);
 			}
 			System.out.println();
@@ -50,18 +47,21 @@ public class Board {
 	}
 	/*
 	 * prints the graph with content
+	 * @param s Given state to print
 	 */
-	public void printBoard(HashSet<Coord> boxes, Coord player){
-		System.out.println("Printing board without content");
+	public void printBoard(State s){
+		Set<Coord> boxes = s.boxes;
+		Coord player = s.player;
+		System.out.println("Printing board with content");
 		System.out.print(" ");
 		System.out.println(boxes);
-		for(int i=0;i<sizeX;i++){
+		for(int i=0;i<board[0].length;i++){
 			System.out.print(i);
 		}
 			System.out.println();
-		for(int y=0;y<sizeY;y++){
+		for(int y=0;y<board.length;y++){
 			System.out.print(y);
-			for(int x=0;x<sizeX;x++){
+			for(int x=0;x<board[0].length;x++){
 				 Coord tmp = new Coord(x,y);
 				if(boxes.contains(tmp) && goals.contains(tmp)){
 					System.out.print('*');
