@@ -46,7 +46,7 @@ public class Solver {
 	private void initialize(ArrayList<String> list){
 		
 		int xSize = 0;
-		int ySize = list.size()-1;
+		int ySize = list.size();
 		for(String str : list){
 			if(str.length() > xSize)
 				xSize = str.length();

@@ -70,6 +70,7 @@ public class Local {
 			lLine = pStream.readLine();
 			boardArray.add(lLine);
 		} while (lLine.charAt(0) != ';');
+		boardArray.remove(boardArray.size()-1);
 		
 		return boardArray;
 	}
