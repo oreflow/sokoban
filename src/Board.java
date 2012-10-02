@@ -1,51 +1,65 @@
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Set;
 
 
 
 /**
- * TODO Put here a description of what this class does.
  *
- * @author Tim.
+ * @author Brute Force.
  *         Created Sep 20, 2012.
  */
 public class Board {
+	/** byte representation of the board */
 	byte[][] board;
+	/** set containing the goals */
 	Set<Coord> goals;
 	
 	
+	/**
+	 * 
+	 *
+	 * @param b
+	 * @param g
+	 */
 	public Board(byte [] [] b, Set<Coord> g){
 		this.board = b;
 		this.goals = g;
 	}
+	/**
+	 * 
+	 *
+	 * @param c
+	 * @return the byte at given coordinate
+	 */
 	public byte get(Coord c){
-		return board[c.y][c.x];
+		return this.board[c.y][c.x];
 	}
 	
 	
 
-	/*
+	/**
 	 * prints the graph without any content
 	 */
 	public void printBoard(){
 		System.out.println("Printing board without content");
 		System.out.print(" ");
-		for(int i=0;i<board[0].length;i++){
+		for(int i=0;i<this.board[0].length;i++){
 			System.out.print(i);
 		}
 			System.out.println();
-		for(int y=0;y<board.length;y++){
+		for(int y=0;y<this.board.length;y++){
 			System.out.print(y);
-			for(int x=0;x<board[0].length;x++){
-				System.out.print(board[x][y]);
+			for(int x=0;x<this.board[0].length;x++){
+				if(this.board[y][x] == -1)
+					System.out.print("#");
+				else if(this.goals.contains(new Coord(y,x)))
+					System.out.print(".");
+				else
+					System.out.print(" ");
 			}
 			System.out.println();
 		}
 	}
-	/*
+	/**
 	 * prints the graph with content
 	 * @param s Given state to print
 	 */
@@ -55,27 +69,28 @@ public class Board {
 		System.out.println("Printing board with content");
 		System.out.print(" ");
 		System.out.println(boxes);
-		for(int i=0;i<board[0].length;i++){
+		for(int i=0;i<this.board[0].length;i++){
 			System.out.print(i);
 		}
 			System.out.println();
-		for(int y=0;y<board.length;y++){
+		for(int y=0;y<this.board.length;y++){
 			System.out.print(y);
-			for(int x=0;x<board[0].length;x++){
+			for(int x=0;x<this.board[0].length;x++){
 				 Coord tmp = new Coord(x,y);
-				if(boxes.contains(tmp) && goals.contains(tmp)){
+				if(boxes.contains(tmp) && this.goals.contains(tmp)){
 					System.out.print('*');
-				}else if(player.equals(tmp) && goals.contains(tmp)){
+				}else if(player.equals(tmp) && this.goals.contains(tmp)){
 					System.out.print('+');
 				}else if(player.equals(tmp)){
 					System.out.print('@');
-				}else if(goals.contains(tmp)){
+				}else if(this.goals.contains(tmp)){
 					System.out.print('.');
 				}else if(boxes.contains(tmp)){
 					System.out.print('$');
-				}else{
-					System.out.print(board[x][y]);
-				}
+				}else if(this.board[y][x] == -1)
+					System.out.print("#");
+				else
+					System.out.print(" ");
 			}
 			System.out.println();
 		}

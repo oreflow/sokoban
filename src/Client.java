@@ -1,12 +1,27 @@
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+/**
+ * TODO Put here a description of what this class does.
+ *
+ * @author Brute Force.
+ *         Created Oct 2, 2012.
+ */
 public class Client {
+	/**
+	 * TODO Put here a description of what this constructor does.
+	 *
+	 * @param host
+	 * @param port
+	 * @param puzzleNumber
+	 */
 	public Client(String host, int port, String puzzleNumber) {
 
 		try {
@@ -18,7 +33,15 @@ public class Client {
 			lOut.println(puzzleNumber);
 			lOut.flush();
 
-			char[][] board = readBoard(lIn);
+			ArrayList<String> list = new ArrayList<String>();
+			System.out.println();
+			String lLine = lIn.readLine();
+			while((lLine = lIn.readLine()) != null)
+				
+			Solver solver = new Solver(list);
+			System.out.println(s.solve());
+			
+			String lLine = pStream.readLine();
 
 			//printBoard(board);
 			//Local l = new Local(board);
@@ -27,7 +50,7 @@ public class Client {
 			lOut.flush();
 
 			// read answer from the server
-			String lLine = lIn.readLine();
+			lLine = lIn.readLine();
 
 			System.out.println(lLine);
 		} catch (Throwable t) {
@@ -45,36 +68,7 @@ public class Client {
 		Client client = new Client(pArgs[0], Integer.parseInt(pArgs[1]), pArgs[2]);
 	}
 
-	public char[][] readBoard(BufferedReader pStream) throws IOException {
-		String lLine = pStream.readLine();
-
-		// read number of rows
-		int lNumRows = Integer.parseInt(lLine);
-
-		char[][] board = null;
-
-		// read each row
-		for (int y = 1; y <= lNumRows; y++) {
-			lLine = pStream.readLine();
-			if(board == null)
-				board  = new char[lNumRows+1][lLine.length()];
-			int x = 0;
-			for (char c : lLine.toCharArray()) {
-				board[y][x++] = c;
-			}
-		}
-		return board;
-	}
 	
-	private void printBoard(char[][] board){
-			for(int j=0; j<board[0].length; j++){
-				for(int i=0; i<board.length; i++){
-					System.out.print(board[i][j]);
-			}
-			System.out.println();
-		}
-			
-	}
 
 	
 }

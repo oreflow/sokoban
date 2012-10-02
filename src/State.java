@@ -2,24 +2,33 @@ import java.util.Set;
 
 
 /**
- * TODO Put here a description of what this class does.
+ * Class that represents a state in the game
  *
- * @author tim.
+ * @author Brute Force.
  *         Created Sep 20, 2012.
  */
 final public class State {
+	/** position of the player in this state */
 	final Coord player;
+	/** positions of the boxes in this state */
 	final Set<Coord> boxes;
+	/** pointer to the board this state is in */
 	final Board board;
 	/**
-	 * TODO Put here a description of what this constructor does.
-	 *@param b = set of boxes
+	 * @param player the players position
+	 * @param boxes the boxes positions
 	 */
 	public State(Coord player, Set<Coord> boxes){
 		this.player = player;
 		this.boxes=boxes;
-		board = null;
+		this.board = null;
 	}
+	/**
+	 *
+	 * @param player player position
+	 * @param boxes the boxes positions
+	 * @param board used game board
+	 */
 	public State(Coord player, Set<Coord> boxes, Board board){
 		this.player = player;
 		this.boxes=boxes;
