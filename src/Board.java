@@ -1,7 +1,5 @@
 import java.util.Set;
 
-
-
 /**
  *
  * @author Brute Force.
@@ -23,6 +21,7 @@ public class Board {
 	public Board(byte [] [] b, Set<Coord> g){
 		this.board = b;
 		this.goals = g;
+		setDistances();
 	}
 	/**
 	 * 
@@ -33,7 +32,14 @@ public class Board {
 	public byte get(Coord c){
 		return this.board[c.y][c.x];
 	}
-	
+	/**
+	 * 
+	 * sets the distances to nearest goal in the Board
+	 *
+	 */
+	public void setDistances(){
+		return;
+	}
 	
 
 	/**
