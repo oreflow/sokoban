@@ -39,7 +39,6 @@ public class Solver {
 	 * @return String representation of the players' movements to complete the game
 	 */
 	public String solve(){
-		this.board.printBoard();
 		
 		return "";
 	}

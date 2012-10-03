@@ -1,3 +1,5 @@
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Set;
 
 /**
@@ -38,6 +40,31 @@ public class Board {
 	 *
 	 */
 	public void setDistances(){
+		for(Coord currentGoal : this.goals){
+			Queue<Coord> q = new LinkedList<Coord>();
+			Queue<Byte> depthQueue = new LinkedList<Byte>();
+			q.add(currentGoal);
+			depthQueue.add((byte) 0);
+			boolean visited [][] = new boolean [this.board.length][this.board[0].length];
+			visited[currentGoal.y][currentGoal.x] = true;
+			
+			while (!q.isEmpty()){
+				Coord current = q.poll();
+				byte currentDepth = depthQueue.poll();
+				visited [current.y][current.x] = true;
+				if(this.board [current.y] [current.x] > currentDepth){
+					this.board [current.y] [current.x] = currentDepth;
+					for(Coord c : current.getNeighbors()){
+						q.add(c);
+						depthQueue.add((byte) (currentDepth + 1));
+					}
+				}
+				else{
+					continue;
+				}
+				
+			}
+		}
 		return;
 	}
 	
@@ -61,6 +88,26 @@ public class Board {
 					System.out.print(".");
 				else
 					System.out.print(" ");
+			}
+			System.out.println();
+		}
+	}
+	
+	/**
+	 * prints the graph with numbers
+	 */
+	public void printNumbers(){
+		System.out.println("Printing board without content");
+		System.out.print(" ");
+		for(int i=0;i<this.board[0].length;i++){
+			System.out.print(i+"\t");
+		}
+			System.out.println();
+		for(int y=0;y<this.board.length;y++){
+			System.out.print(y+"\t");
+			for(int x=0;x<this.board[0].length;x++){
+					System.out.print(this.board[y][x] + "\t");
+
 			}
 			System.out.println();
 		}
