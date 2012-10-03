@@ -46,6 +46,14 @@ final public class Coord {
 			return "(" + this.y + "," + this.x +")";
 		}
 		
+		/**
+		 *
+		 * @return array of Coord containing the neighbors of this Coord
+		 */
+		public Coord[] getNeighbors(){
+			Coord [] c = {this.relR(),this.relL(),this.relU(),this.relD()};
+			return c;
+		}
 		
 		/**
 		 * @return coordinates to the position to the right
