@@ -51,25 +51,25 @@ final public class Coord {
 		 * @return coordinates to the position to the right
 		 */
 		public Coord relR(){
-			return new Coord(this.x+1,this.y);
+			return new Coord(this.y,this.x+1);
 		}
 		/**
 		 * @return coordinates to the position below
 		 */
 		public Coord relD(){
-			return new Coord(this.x,this.y+1);
+			return new Coord(this.y+1,this.x);
 		}
 		/**
 		 * @return coordinates to the position to the left
 		 */
 		public Coord relL(){
-			return new Coord(this.x-1,this.y);
+			return new Coord(this.y,this.x-1);
 		}
 		/**
 		 * @return coordinates to the position above
 		 */
 		public Coord relU(){
-			return new Coord(this.x,this.y-1);
+			return new Coord(this.y-1,this.x);
 		}
 		
 }
