@@ -76,7 +76,7 @@ public class Board {
 		for(int y=0;y<this.board.length;y++){
 			System.out.print(y);
 			for(int x=0;x<this.board[0].length;x++){
-				 Coord tmp = new Coord(x,y);
+				 Coord tmp = new Coord(y,x);
 				if(boxes.contains(tmp) && this.goals.contains(tmp)){
 					System.out.print('*');
 				}else if(player.equals(tmp) && this.goals.contains(tmp)){
