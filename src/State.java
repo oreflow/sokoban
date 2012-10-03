@@ -23,6 +23,18 @@ final public class State {
 		this.boxes=boxes;
 		this.board = null;
 	}
+	
+	public Board getBoard(){
+		return board;
+	}
+	
+	public Coord getPlayer(){
+		return player;
+	}
+	
+	public Set<Coord> getBoxes(){
+		return boxes;
+	}
 	/**
 	 *
 	 * @param player player position

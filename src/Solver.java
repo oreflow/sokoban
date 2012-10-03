@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -112,5 +113,102 @@ public class Solver {
 		this.start = new State(player,startBoxes);
 		this.goal = new State(player,goalSet);
 		
+	}
+	
+	/**
+	 * Returns a set of states that are reachable from a selected state.
+	 * 
+	 * @param origin
+	 * @return
+	 */
+	public Set<State> getNeighbours(State origin) {
+		// TODO Implement
+		return null;
+	}
+
+	/**
+	 * Measures the distance from a state to the goal state.
+	 * 
+	 * @param origin
+	 * @return
+	 */
+	public int distanceToGoal(State origin) {
+		Board board = origin.getBoard();
+		int total = 0;
+		for (Coord box : origin.getBoxes()) {
+			total += board.board[box.y][box.x];
+		}
+		return total;
+	}
+
+	/**
+	 * An IDA* Search from a state to its goal.
+	 * 
+	 * @param origin
+	 * @return The list of states that will reach the goal.
+	 */
+	@SuppressWarnings("unchecked")
+	public List<State> frIDAStarSearch(State origin) {
+
+		boolean keepLooping = true;
+		List<State> goalPath = new ArrayList<State>();
+		goalPath.add(origin);
+		int costLimit = distanceToGoal(origin);
+
+		while (keepLooping) {
+			Object[] result = idaStarHelp(0, goalPath, costLimit);
+
+			// Search failed, returns null.
+			if ((Integer) result[1] == Integer.MAX_VALUE) {
+				return null;
+			}
+
+			// Search succeeded, returns the solution
+			if (result[0] != null)
+				return (List<State>) result[0];
+		}
+		return null;
+	}
+
+	/**
+	 * Help method of IDA*. Will perform a search from the last element in a
+	 * path to its goal, provided a starting cost and an upper bound of the cost.	 
+	 *  
+	 * @return Array of {Solution (List<State>), Cost limit (Integer)}
+	 */
+	private Object[] idaStarHelp(int startCost, List<State> goalPath, int costLimit) {
+		State currentState = goalPath.get(goalPath.size() - 1);
+		int minCost = startCost + distanceToGoal(currentState);
+
+		// Search exceeded the limit.
+		if (minCost > costLimit) {
+			// Good java practice.
+			return new Object[] { null, minCost };
+		}
+
+		// Search finalized!
+		if (distanceToGoal(currentState) == 0)
+			return new Object[] { goalPath, costLimit };
+
+		// Keep searching...
+		int nextCostLimit = Integer.MAX_VALUE;
+		Set<State> neighbours = getNeighbours(currentState);
+		for (State state : neighbours) {
+			int newStartCost = startCost + 1;
+			List<State> newGoalPath = new ArrayList<State>();
+			newGoalPath.addAll(goalPath);
+			Object[] result = idaStarHelp(newStartCost, newGoalPath, costLimit);
+
+			// Search finalized!
+			if (result[0] != null) {
+				return result;
+			}
+
+			nextCostLimit = Math.min(nextCostLimit, (Integer) result[1]);
+		}
+
+		// Branch failed.
+		return new Object[] { null, nextCostLimit };
+
 	}
 }
