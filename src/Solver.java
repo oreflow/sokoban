@@ -1,14 +1,16 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-
 
 /**
  * This class plays the game
- *
- * @author Brute Force.
- *         Created Oct 2, 2012.
+ * 
+ * @author Brute Force. Created Oct 2, 2012.
  */
 public class Solver {
 
@@ -24,96 +26,119 @@ public class Solver {
 	 * State containing the goal positions of the boxes
 	 */
 	State goal;
-	
+
+	Coord playerPos;
+
+	public static void main(String[] args) {
+		Solver solver = new Solver(null);
+	}
+
 	/**
 	 * Initializes the variables
-	 *
-	 * @param input String representation of the starting board
+	 * 
+	 * @param input
+	 *            String representation of the starting board
 	 */
-	public Solver(ArrayList<String> input){
-		initialize(input);
+	public Solver(ArrayList<String> input) {
+
+		ArrayList<String> arrBoard = new ArrayList<String>();
+		arrBoard.add("#########");
+		arrBoard.add("# @     #");
+		arrBoard.add("#   .   #");
+		arrBoard.add("#  $    #");
+		arrBoard.add("#       #");
+		arrBoard.add("#########");
+
+		initialize(arrBoard);
+
+		ArrayList<State> states = createTestStates();
+		String solution = playerMovements(states);
+		System.out.println("Solution: " + solution);
 	}
+
 	/**
 	 * The method that does it all
-	 *
-	 * @return String representation of the players' movements to complete the game
+	 * 
+	 * @return String representation of the players' movements to complete the
+	 *         game
 	 */
-	public String solve(){
-		
+	public String solve() {
+
 		return "";
 	}
-	
-	private void initialize(ArrayList<String> list){
-		
+
+	private void initialize(ArrayList<String> list) {
+
 		int xSize = 0;
 		int ySize = list.size();
-		for(String str : list){
-			if(str.length() > xSize)
+		for (String str : list) {
+			if (str.length() > xSize)
 				xSize = str.length();
-			
+
 		}
-			ArrayList<Character> walkableCharSet = new ArrayList<Character>() {
-				{
-					add('@');
-					add('+');
-					add('.');
-					add(' ');
-					add('*');
-					add('$');
-				}
-			};
-			ArrayList<Character> blockCharSet = new ArrayList<Character>() {
-				{
-					add('*');
-					add('$');
-				}
-			};
-			ArrayList<Character> goalCharSet = new ArrayList<Character>() {{
+		ArrayList<Character> walkableCharSet = new ArrayList<Character>() {
+			{
+				add('@');
+				add('+');
+				add('.');
+				add(' ');
+				add('*');
+				add('$');
+			}
+		};
+		ArrayList<Character> blockCharSet = new ArrayList<Character>() {
+			{
+				add('*');
+				add('$');
+			}
+		};
+		ArrayList<Character> goalCharSet = new ArrayList<Character>() {
+			{
 				add('.');
 				add('*');
 				add('+');
-			}};
-			
-			Set<Coord> startBoxes = new HashSet<Coord>();
-			Set<Coord> goalBoxes = new HashSet<Coord>();
-			Set<Coord> goalSet = new HashSet<Coord>();
-			Coord player = null;
+			}
+		};
 
-			byte [] [] b = new byte [ySize] [xSize];
-			
-			for (int y = 0; y < ySize; y++) {
-				String row = list.get(y);
-				for (int x = 0; x < xSize; x++) {
-					char c = ' ';
-					if(x<row.length())
-						c = row.charAt(x);
-					
-					if(blockCharSet.contains(c)){
-						startBoxes.add(new Coord(y,x));
-					}
-					if(goalCharSet.contains(c)) {
-						goalSet.add(new Coord(y,x));
-						goalBoxes.add(new Coord(y,x));
-					}
-					if(c == '@' || c == '+' ) {
-						player = new Coord(y,x);
-					}
-					
-					if (walkableCharSet.contains(c)) {
-							b[y][x] = Byte.MAX_VALUE;
-					}
-					else if(c == '#'){
-						b[y][x] = -1;
-					}
+		Set<Coord> startBoxes = new HashSet<Coord>();
+		Set<Coord> goalBoxes = new HashSet<Coord>();
+		Set<Coord> goalSet = new HashSet<Coord>();
+		Coord player = null;
+
+		byte[][] b = new byte[ySize][xSize];
+
+		for (int y = 0; y < ySize; y++) {
+			String row = list.get(y);
+			for (int x = 0; x < xSize; x++) {
+				char c = ' ';
+				if (x < row.length())
+					c = row.charAt(x);
+
+				if (blockCharSet.contains(c)) {
+					startBoxes.add(new Coord(y, x));
+				}
+				if (goalCharSet.contains(c)) {
+					goalSet.add(new Coord(y, x));
+					goalBoxes.add(new Coord(y, x));
+				}
+				if (c == '@' || c == '+') {
+					player = new Coord(y, x);
+				}
+
+				if (walkableCharSet.contains(c)) {
+					b[y][x] = Byte.MAX_VALUE;
+				} else if (c == '#') {
+					b[y][x] = -1;
 				}
 			}
+		}
 
-		this.board = new Board(b,goalSet);
-		this.start = new State(player,startBoxes);
-		this.goal = new State(player,goalSet);
-		
+		this.board = new Board(b, goalSet);
+		this.start = new State(player, startBoxes);
+		this.goal = new State(player, goalSet);
+
 	}
-	
+
 	/**
 	 * Returns a set of states that are reachable from a selected state.
 	 * 
@@ -171,8 +196,9 @@ public class Solver {
 
 	/**
 	 * Help method of IDA*. Will perform a search from the last element in a
-	 * path to its goal, provided a starting cost and an upper bound of the cost.	 
-	 *  
+	 * path to its goal, provided a starting cost and an upper bound of the
+	 * cost.
+	 * 
 	 * @return Array of {Solution (List<State>), Cost limit (Integer)}
 	 */
 	private Object[] idaStarHelp(int startCost, List<State> goalPath, int costLimit) {
@@ -210,4 +236,171 @@ public class Solver {
 		return new Object[] { null, nextCostLimit };
 
 	}
+
+	// Creates some test states for playerMovements
+	ArrayList<State> createTestStates() {
+
+		ArrayList<State> states = new ArrayList<State>();
+		Coord player = new Coord(1, 2);
+		Coord box = new Coord(3, 3);
+		Set<Coord> boxes = new HashSet<Coord>();
+		boxes.add(box);
+		box = new Coord(2, 6);
+		boxes.add(box);
+		State state = new State(player, boxes, this.board);
+		this.board.printBoard(state);
+		states.add(state);
+
+		box = new Coord(4, 3);
+		boxes = new HashSet<Coord>();
+		boxes.add(box);
+		box = new Coord(2, 6);
+		boxes.add(box);
+		state = new State(player, boxes, this.board);
+		this.board.printBoard(state);
+		states.add(state);
+
+		player = new Coord(4, 7);
+		box = new Coord(4, 3);
+		boxes = new HashSet<Coord>();
+		boxes.add(box);
+		box = new Coord(3, 6);
+		boxes.add(box);
+		state = new State(player, boxes, this.board);
+		this.board.printBoard(state);
+		states.add(state);
+
+		return states;
+	}
+
+	// Creates string representation of the solution
+	public static String createSolStr(Coord goal, Map<Coord, Coord> parents) {
+		String solTmp = "";
+		Coord coord = goal;
+		Coord parent;
+		while (parents.get(coord) != null) {
+			parent = parents.get(coord);
+
+			int x = coord.x;
+			int y = coord.y;
+			int x2 = parent.x;
+			int y2 = parent.y;
+
+			if (x > x2) {// right
+				solTmp += "R";
+			} else if ((x < x2)) {// left
+				solTmp += "L";
+			} else if (y > y2) {// down
+				solTmp += "D";
+			} else if (y < y2) {// up
+				solTmp += "U";
+			}
+			coord = parent;
+		}
+		String sol = new StringBuffer(solTmp).reverse().toString();
+		return sol;
+	}
+
+	// Gets a list of states and calculates the movement of the player between
+	// these
+	// Returns the string representation of the solution
+	String playerMovements(ArrayList<State> states) {
+
+		Coord boxBef = null;
+		Coord boxAft = null;
+		playerPos = null;
+		Coord playerPosAft = null;
+		String solution = "";
+
+		for (int i = 0; i < states.size() - 1; i++) {
+			if (i == 0) { // First state, get players position
+				playerPos = states.get(i).player;
+			}
+
+			Set<Coord> boxes1 = states.get(i).boxes;
+			Set<Coord> boxes2 = states.get(i + 1).boxes;
+
+			// Find out which box has moved between state i and i+1
+			Iterator<Coord> it = boxes1.iterator();
+			Coord box1 = null;
+			while (it.hasNext()) {
+				box1 = (Coord) it.next();
+				if (!boxes2.contains(box1)) {
+					boxBef = box1;
+				}
+
+			}
+			it = boxes2.iterator();
+			Coord box2 = null;
+			while (it.hasNext()) {
+				box2 = (Coord) it.next();
+				if (!boxes1.contains(box2)) {
+					boxAft = box2;
+				}
+
+			}
+
+			String part = null;
+			if (boxBef.relU().y == boxAft.y) { // Box goes up
+				playerPosAft = boxBef.relD();
+				part = "U";
+			} else if (boxBef.relD().y == boxAft.y) { // Box goes down
+				playerPosAft = boxBef.relU();
+				part = "D";
+			} else if (boxBef.relL().x == boxAft.x) { // Box goes left
+				playerPosAft = boxBef.relR();
+				part = "L";
+			} else if (boxBef.relR().x == boxAft.x) { // Box goes right
+				playerPosAft = boxBef.relL();
+				part = "R";
+			}
+
+			System.out.println("start: " + playerPos);
+			System.out.println("goal: " + playerPosAft);
+
+			// do bfs
+			String solutionPart = bfs(playerPos, playerPosAft, states.get(i));
+			solution = solution + solutionPart + part;
+			playerPos = boxBef;
+
+		}
+
+		// Last state, make player go to that states player position
+		String solutionPart = bfs(playerPos, states.get(states.size() - 1).player, states.get(states.size() - 1));
+		solution = solution + solutionPart;
+		return solution;
+	}
+
+	// Makes an bfs of the players movement between two states
+	public String bfs(Coord start, Coord goal, State state) {
+		LinkedList<Coord> qu = new LinkedList<Coord>();
+		Map<Coord, Coord> parents = new HashMap<Coord, Coord>();
+		parents.put(start, null);
+		qu.add(start);
+		HashSet<Coord> visited = new HashSet<Coord>();
+		visited.add(start);
+		Set<Coord> boxes = state.boxes;
+
+		while (!qu.isEmpty()) {
+			Coord head = qu.poll();
+			if (head.equals(goal)) {
+				System.out.println("found goal");
+				return createSolStr(head, parents);
+			}
+			Coord[] neighs = head.getNeighbors();
+			for (int j = 0; j < neighs.length; j++) {
+				Coord neighbour = neighs[j];
+				if (!boxes.contains(neighbour) && this.board.board[neighbour.y][neighbour.x] != -1) {
+					if (!visited.contains(neighbour)) {
+						visited.add(neighbour);
+						parents.put(neighbour, head);
+						qu.add(neighbour);
+					}
+				}
+			}
+
+		}
+		return null;
+	}
+
 }
