@@ -27,12 +27,14 @@ public class Solver {
 	 */
 	State goal;
 
+	Coord playerOrigin;
+
 	Coord playerPos;
 
-	public static void main(String[] args) {
-		Solver solver = new Solver(null);
-		solver.testState();
-	}
+	// public static void main(String[] args) {
+	// Solver solver = new Solver(null);
+	// solver.testState();
+	// }
 
 	/**
 	 * Initializes the variables
@@ -41,6 +43,7 @@ public class Solver {
 	 *            String representation of the starting board
 	 */
 	public Solver(ArrayList<String> input) {
+		initialize(input, true);
 	}
 
 	public void testPlayerMovement() {
@@ -88,6 +91,14 @@ public class Solver {
 		System.out.println(solution);
 	}
 
+	private List<State> reverse(List<State> input) {
+		LinkedList<State> output = new LinkedList<State>();
+		for (State o : input) {
+			output.addFirst(o);
+		}
+		return output;
+	}
+
 	/**
 	 * The method that does it all
 	 * 
@@ -95,8 +106,19 @@ public class Solver {
 	 *         game
 	 */
 	public String solve() {
-
-		return "";
+		System.out.println("Starting state:");
+		start.printState();
+		System.out.println("Goal state:");
+		goal.printState();
+		List<State> backwardSolution = frIDAStarSearch(start, goal);
+		State temp = backwardSolution.remove(backwardSolution.size() - 1);
+		backwardSolution.add(new State(playerOrigin, temp.boxes, temp.board));
+		System.out.println("Backwards: ");
+		for (State s : backwardSolution) {
+			s.printState();
+		}
+		List<State> solution = reverse(backwardSolution);
+		return playerMovements(solution);
 	}
 
 	private void initialize(ArrayList<String> list, boolean reverse) {
@@ -171,9 +193,10 @@ public class Solver {
 			this.goal = new State(player, goalSet, board);
 		} else {
 			this.board = new Board(b, startBoxes, player);
-			this.start = new State(player, goalSet, board);
-			this.goal = new State(board.lowestReachable(player), startBoxes, board);
+			this.start = new State(null, goalSet, board);
+			this.goal = new State(board.lowestReachable(player, goalSet), startBoxes, board);
 		}
+		playerOrigin = player;
 	}
 
 	/**
@@ -215,7 +238,13 @@ public class Solver {
 		goalPath.add(origin);
 		int costLimit = distanceToGoal(origin);
 
+		int oldCost = costLimit - 1;
+
 		while (keepLooping) {
+			if (oldCost < costLimit) {
+				System.out.println("Searching with depth " + costLimit);
+				oldCost = costLimit;
+			}
 			Set<State> visited = new HashSet<State>();
 			visited.add(origin);
 			Object[] result = depthLimitedSearch(0, goalPath, goal, costLimit, visited);
@@ -247,7 +276,8 @@ public class Solver {
 	 */
 	private Object[] depthLimitedSearch(int startCost, List<State> goalPath, State goal, int costLimit, Set<State> visited) {
 		// DEBUG
-		System.out.println("IDA* Help, limit " + costLimit + ", visited " + visited.size());
+		// System.out.println("IDA* Help, limit " + costLimit + ", visited " +
+		// visited.size());
 		State currentState = goalPath.get(goalPath.size() - 1);
 		visited.add(currentState);
 		int minCost = startCost + distanceToGoal(currentState);
@@ -422,7 +452,7 @@ public class Solver {
 		// Last state, make player go to that states player position
 		String solutionPart = bfs(playerPos, states.get(states.size() - 1).player, states.get(states.size() - 1));
 		solution = solution + solutionPart;
-		return solution;
+		return solution.replace("null", "");
 	}
 
 	// Makes an bfs of the players movement between two states

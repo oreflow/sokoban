@@ -57,10 +57,10 @@ final public class State {
 					System.out.print("*");
 				else if (isBox)
 					System.out.print("$");
-				else if (isGoal)
-					System.out.print(".");
 				else if (isGoal && isPlayer)
 					System.out.print("+");
+				else if (isGoal)
+					System.out.print(".");
 				else if (isPlayer)
 					System.out.print("@");
 				else if (board.board[y][x] < 0)
@@ -90,8 +90,12 @@ final public class State {
 				Coord possibleNeighbour = boxNeighbours[i];
 				if (possibleNeighbour == null)
 					continue;
-				if (board.hasPath(player, possibleNeighbour)) {
-					neighbours.add(new State(this, board.lowestReachable(boxNeighbours[4 + i]), box, allDirs[i]));
+				Set<Coord> newBoxSet = new HashSet<Coord>();
+				newBoxSet.addAll(boxes);
+				newBoxSet.remove(box);
+				newBoxSet.add(boxNeighbours[i]);
+				if (board.hasPath(player, possibleNeighbour, boxes)) {
+					neighbours.add(new State(this, board.lowestReachable(boxNeighbours[4 + i], newBoxSet), box, allDirs[i]));
 				}
 			}
 		}
@@ -137,7 +141,8 @@ final public class State {
 		for (Coord box : boxes) {
 			code = code + box.hashCode();
 		}
-		code = code + player.hashCode() << 4;
+		if (player != null)
+			code = code + player.hashCode() << 4;
 		return code;
 	}
 
@@ -146,7 +151,7 @@ final public class State {
 			return false;
 		}
 		State other = (State) o;
-		if (!player.equals(other.player)) {
+		if (player != null && other.player != null && !player.equals(other.player)) {
 			return false;
 		}
 		if (other.boxes.size() != boxes.size())

@@ -32,7 +32,7 @@ public class Board {
 		return this.board[c.y][c.x] >= 0;
 	}
 
-	public boolean hasPath(Coord first, Coord second, Set<Coord> visited) {
+	public boolean hasPath(Coord first, Coord second, Set<Coord> boxes, Set<Coord> visited) {
 		// Found it!
 		if (second.equals(first))
 			return true;
@@ -43,8 +43,8 @@ public class Board {
 		// Loops through all neighbours. If there is a path from first to
 		// second, there is a path from some neighbour of second to goal.
 		for (Coord neighbour : first.getNeighbors()) {
-			if (!visited.contains(neighbour) && isWalkable(neighbour)) {
-				if (hasPath(neighbour, second, visited))
+			if (!visited.contains(neighbour) && isWalkable(neighbour) && !boxes.contains(neighbour)) {
+				if (hasPath(neighbour, second, boxes, visited))
 					return true;
 			}
 		}
@@ -53,15 +53,17 @@ public class Board {
 		return false;
 	}
 
-	public boolean hasPath(Coord first, Coord second) {
-		return hasPath(first, second, new HashSet<Coord>());
+	public boolean hasPath(Coord first, Coord second, Set<Coord> boxes) {
+		if (first == null)
+			return true;
+		return hasPath(first, second, boxes, new HashSet<Coord>());
 	}
 
-	public Coord lowestReachable(Coord origin) {
-		return lowestReachable(origin, new HashSet<Coord>());
+	public Coord lowestReachable(Coord origin, Set<Coord> boxes) {
+		return lowestReachable(origin, new HashSet<Coord>(), boxes);
 	}
 
-	public Coord lowestReachable(Coord origin, Set<Coord> visited) {
+	public Coord lowestReachable(Coord origin, Set<Coord> visited, Set<Coord> boxes) {
 		Queue<Coord> q = new LinkedList<Coord>();
 		q.add(origin);
 		visited.add(origin);
@@ -77,7 +79,7 @@ public class Board {
 				lowest = c;
 			}
 			for (Coord adj : c.getNeighbors()) {
-				if (isWalkable(adj) && !visited.contains(adj)) {
+				if (isWalkable(adj) && !visited.contains(adj) && !boxes.contains(adj)) {
 					visited.add(adj);
 					q.add(adj);
 				}

@@ -6,13 +6,12 @@ import java.util.ArrayList;
 
 /**
  * Class that runs the solver against the server
- *
- * @author Brute Force.
- *         Created Oct 2, 2012.
+ * 
+ * @author Brute Force. Created Oct 2, 2012.
  */
 public class Client {
 	/**
-	 *
+	 * 
 	 * @param host
 	 * @param port
 	 * @param puzzleNumber
@@ -28,20 +27,19 @@ public class Client {
 			lOut.flush();
 
 			ArrayList<String> list = new ArrayList<String>();
-			//System.out.println();
-			
+			// System.out.println();
+
 			String lLine = lIn.readLine();
 			System.out.println(lLine);
 			int rows = Integer.parseInt(lLine);
-			for(int i=0;i<rows;i++){
+			for (int i = 0; i < rows; i++) {
 				lLine = lIn.readLine();
 				list.add(lLine);
 			}
-			
-				
+
 			Solver solver = new Solver(list);
 			String solution = solver.solve();
-			
+
 			lOut.println(solution);
 			lOut.flush();
 
@@ -53,11 +51,10 @@ public class Client {
 			t.printStackTrace();
 		}
 	}
-	
 
 	/**
 	 * main
-	 *
+	 * 
 	 * @param pArgs
 	 */
 	public static void main(String[] pArgs) {
@@ -65,11 +62,8 @@ public class Client {
 			System.out.println("usage: java Client host port boardnum");
 			return;
 		}
-		
+
 		new Client(pArgs[0], Integer.parseInt(pArgs[1]), pArgs[2]);
 	}
 
-	
-
-	
 }
