@@ -4,6 +4,12 @@
  * @author Brute Force. Created Sep 21, 2012.
  */
 final public class Coord {
+
+	public static final Coord LEFT = new Coord(0, -1);
+	public static final Coord UP = new Coord(-1, 0);
+	public static final Coord RIGHT = new Coord(0, 1);
+	public static final Coord DOWN = new Coord(1, 0);
+
 	/**
 	 * TODO Put here a description of this field.
 	 */
@@ -22,6 +28,11 @@ final public class Coord {
 	public Coord(int y, int x) {
 		this.y = y;
 		this.x = x;
+	}
+
+	public Coord(Coord origin, Coord relDirection) {
+		this.y = origin.y + relDirection.y;
+		this.x = origin.x + relDirection.x;
 	}
 
 	/*

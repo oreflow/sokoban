@@ -31,6 +31,7 @@ public class Solver {
 
 	public static void main(String[] args) {
 		Solver solver = new Solver(null);
+		solver.testState();
 	}
 
 	/**
@@ -40,20 +41,51 @@ public class Solver {
 	 *            String representation of the starting board
 	 */
 	public Solver(ArrayList<String> input) {
+	}
 
+	public void testPlayerMovement() {
+
+		ArrayList<String> arrBoard = createArrBoard();
+
+		initialize(arrBoard, false);
+
+		ArrayList<State> states = createTestStates();
+
+		String solution = playerMovements(states);
+		System.out.println("Solution: " + solution);
+	}
+
+	public ArrayList<String> createArrBoard() {
 		ArrayList<String> arrBoard = new ArrayList<String>();
 		arrBoard.add("#########");
 		arrBoard.add("# @     #");
-		arrBoard.add("#   .   #");
-		arrBoard.add("#  $    #");
+		arrBoard.add("#   ..  #");
+		arrBoard.add("#  $$   #");
 		arrBoard.add("#       #");
 		arrBoard.add("#########");
+		return arrBoard;
+	}
 
-		initialize(arrBoard);
+	public void testState() {
+		ArrayList<String> arrBoard = createArrBoard();
+		initialize(arrBoard, true);
 
-		ArrayList<State> states = createTestStates();
-		String solution = playerMovements(states);
-		System.out.println("Solution: " + solution);
+		System.out.println("Start: ");
+		start.printState();
+		System.out.println("Goal: ");
+		goal.printState();
+
+		List<State> states = frIDAStarSearch(start, goal);
+		System.out.println("States in solution: ");
+		for (State s : states) {
+			s.printState();
+		}
+		List<State> reverseStates = new LinkedList<State>();
+		for (State s : states) {
+			reverseStates.add(0, s);
+		}
+		String solution = playerMovements(reverseStates);
+		System.out.println(solution);
 	}
 
 	/**
@@ -67,7 +99,7 @@ public class Solver {
 		return "";
 	}
 
-	private void initialize(ArrayList<String> list) {
+	private void initialize(ArrayList<String> list, boolean reverse) {
 
 		int xSize = 0;
 		int ySize = list.size();
@@ -133,10 +165,15 @@ public class Solver {
 			}
 		}
 
-		this.board = new Board(b, goalSet);
-		this.start = new State(player, startBoxes);
-		this.goal = new State(player, goalSet);
-
+		if (!reverse) {
+			this.board = new Board(b, goalSet, player);
+			this.start = new State(player, startBoxes, board);
+			this.goal = new State(player, goalSet, board);
+		} else {
+			this.board = new Board(b, startBoxes, player);
+			this.start = new State(player, goalSet, board);
+			this.goal = new State(board.lowestReachable(player), startBoxes, board);
+		}
 	}
 
 	/**
@@ -145,9 +182,8 @@ public class Solver {
 	 * @param origin
 	 * @return
 	 */
-	public Set<State> getNeighbours(State origin) {
-		// TODO Implement
-		return null;
+	public List<State> getNeighbours(State origin) {
+		return origin.getNeighbours();
 	}
 
 	/**
@@ -172,7 +208,7 @@ public class Solver {
 	 * @return The list of states that will reach the goal.
 	 */
 	@SuppressWarnings("unchecked")
-	public List<State> frIDAStarSearch(State origin) {
+	public List<State> frIDAStarSearch(State origin, State goal) {
 
 		boolean keepLooping = true;
 		List<State> goalPath = new ArrayList<State>();
@@ -180,16 +216,24 @@ public class Solver {
 		int costLimit = distanceToGoal(origin);
 
 		while (keepLooping) {
-			Object[] result = idaStarHelp(0, goalPath, costLimit);
+			Set<State> visited = new HashSet<State>();
+			visited.add(origin);
+			Object[] result = depthLimitedSearch(0, goalPath, goal, costLimit, visited);
+
+			List<State> solution = (List<State>) result[0];
+			costLimit = (Integer) result[1];
 
 			// Search failed, returns null.
-			if ((Integer) result[1] == Integer.MAX_VALUE) {
+			if (costLimit == Integer.MAX_VALUE) {
 				return null;
 			}
 
 			// Search succeeded, returns the solution
-			if (result[0] != null)
-				return (List<State>) result[0];
+			if (solution != null)
+				return solution;
+
+			// costLimit++;
+
 		}
 		return null;
 	}
@@ -201,13 +245,17 @@ public class Solver {
 	 * 
 	 * @return Array of {Solution (List<State>), Cost limit (Integer)}
 	 */
-	private Object[] idaStarHelp(int startCost, List<State> goalPath, int costLimit) {
+	private Object[] depthLimitedSearch(int startCost, List<State> goalPath, State goal, int costLimit, Set<State> visited) {
+		// DEBUG
+		System.out.println("IDA* Help, limit " + costLimit + ", visited " + visited.size());
 		State currentState = goalPath.get(goalPath.size() - 1);
+		visited.add(currentState);
 		int minCost = startCost + distanceToGoal(currentState);
 
 		// Search exceeded the limit.
 		if (minCost > costLimit) {
 			// Good java practice.
+			// System.out.println("Limit exceeded");
 			return new Object[] { null, minCost };
 		}
 
@@ -217,12 +265,21 @@ public class Solver {
 
 		// Keep searching...
 		int nextCostLimit = Integer.MAX_VALUE;
-		Set<State> neighbours = getNeighbours(currentState);
+		List<State> neighbours = getNeighbours(currentState);
+		// System.out.println("Looking in state:");
+		// currentState.printState();
 		for (State state : neighbours) {
+			if (visited.contains(state)) {
+				// System.out.println("Visited already.");
+				continue;
+			}
+			// System.out.println("Neighbour: ");
+			// state.printState();
 			int newStartCost = startCost + 1;
 			List<State> newGoalPath = new ArrayList<State>();
 			newGoalPath.addAll(goalPath);
-			Object[] result = idaStarHelp(newStartCost, newGoalPath, costLimit);
+			newGoalPath.add(state);
+			Object[] result = depthLimitedSearch(newStartCost, newGoalPath, goal, costLimit, visited);
 
 			// Search finalized!
 			if (result[0] != null) {
@@ -304,7 +361,7 @@ public class Solver {
 	// Gets a list of states and calculates the movement of the player between
 	// these
 	// Returns the string representation of the solution
-	String playerMovements(ArrayList<State> states) {
+	String playerMovements(List<State> states) {
 
 		Coord boxBef = null;
 		Coord boxAft = null;
@@ -355,9 +412,6 @@ public class Solver {
 				part = "R";
 			}
 
-			System.out.println("start: " + playerPos);
-			System.out.println("goal: " + playerPosAft);
-
 			// do bfs
 			String solutionPart = bfs(playerPos, playerPosAft, states.get(i));
 			solution = solution + solutionPart + part;
@@ -384,7 +438,7 @@ public class Solver {
 		while (!qu.isEmpty()) {
 			Coord head = qu.poll();
 			if (head.equals(goal)) {
-				System.out.println("found goal");
+				// System.out.println("found goal");
 				return createSolStr(head, parents);
 			}
 			Coord[] neighs = head.getNeighbors();
