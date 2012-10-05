@@ -1,3 +1,4 @@
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,6 +14,11 @@ import java.util.Set;
  * @author Brute Force. Created Oct 2, 2012.
  */
 public class Solver {
+	
+	public static final long TIMEOUT = 5000;
+	public static long starttime;
+	
+	public static Map<State, List<State>> stateCache;
 
 	/**
 	 * The board that the game is played on
@@ -43,6 +49,7 @@ public class Solver {
 	 *            String representation of the starting board
 	 */
 	public Solver(ArrayList<String> input) {
+		starttime = System.currentTimeMillis();
 		initialize(input, true);
 	}
 
@@ -111,6 +118,9 @@ public class Solver {
 		System.out.println("Goal state:");
 		goal.printState();
 		List<State> backwardSolution = frIDAStarSearch(start, goal);
+		if(backwardSolution == null){
+			return "";
+		}
 		State temp = backwardSolution.remove(backwardSolution.size() - 1);
 		backwardSolution.add(new State(playerOrigin, temp.boxes, temp.board));
 		System.out.println("Backwards: ");
@@ -123,6 +133,7 @@ public class Solver {
 
 	private void initialize(ArrayList<String> list, boolean reverse) {
 
+		stateCache = new HashMap<State, List<State>>();
 		int xSize = 0;
 		int ySize = list.size();
 		for (String str : list) {
@@ -275,6 +286,12 @@ public class Solver {
 	 * @return Array of {Solution (List<State>), Cost limit (Integer)}
 	 */
 	private Object[] depthLimitedSearch(int startCost, List<State> goalPath, State goal, int costLimit, Set<State> visited) {
+		// Exit on timeout
+		if(System.currentTimeMillis() - TIMEOUT > starttime){
+			return new Object[]{null, Integer.MAX_VALUE};
+		}
+		
+		
 		// DEBUG
 		// System.out.println("IDA* Help, limit " + costLimit + ", visited " +
 		// visited.size());

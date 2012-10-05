@@ -79,6 +79,11 @@ final public class State {
 	 * @return
 	 */
 	public List<State> getNeighbours() {
+		
+		if(Solver.stateCache.containsKey(this)){
+			return Solver.stateCache.get(this);
+		}
+		
 		List<State> neighbours = new ArrayList<State>();
 
 		Coord[] allDirs = { Coord.LEFT, Coord.UP, Coord.RIGHT, Coord.DOWN };
@@ -100,6 +105,7 @@ final public class State {
 			}
 		}
 
+		Solver.stateCache.put(this, neighbours);
 		return neighbours;
 	}
 

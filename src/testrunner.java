@@ -17,7 +17,7 @@ public class testrunner {
 			System.out.println("testrunner <number of games> <opponent>");
 		}
 
-		String port = "5032";
+		int port = 5032;
 
 		System.out.print("|");
 		for (int i = 0; i < games; i++)
@@ -34,13 +34,11 @@ public class testrunner {
 		String tmp;
 		int wins = 0;
 
-		for (int i = 0; i < games; i++) {
-			c = new Client();
-			String[] str = { "dd2380.csc.kth.se", port, i};
-			c.main(str);
+		for (int i = 1; i <= games; i++) {
+			c = new Client("dd2380.csc.kth.se",port, ""+i);
 			System.setOut(originalOut);
 			tmp = baos.toString();
-			if (tmp.contains("good estimation")) {
+			if (tmp.contains("CORRECT")) {
 				System.out.print("x");
 				wins++;
 			} else
