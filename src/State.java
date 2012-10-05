@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 
 /**
@@ -15,6 +17,8 @@ final public class State {
 	final Set<Coord> boxes;
 	/** pointer to the board this state is in */
 	final Board board;
+	
+	final Set<Coord> allPlayer;
 
 	public Board getBoard() {
 		return board;
@@ -41,6 +45,34 @@ final public class State {
 		this.player = player;
 		this.boxes = boxes;
 		this.board = board;
+		this.allPlayer = allAdjacent(player);
+	}
+	
+	public boolean canReach(Coord c){
+		if(allPlayer.size() > 0){
+			return allPlayer.contains(c);
+		}
+		return true;
+	}
+	
+	private Set<Coord> allAdjacent(Coord origin){
+		Set<Coord> visited = new HashSet<Coord>();
+		
+		if(origin == null)
+			return visited;
+		visited.add(origin);
+		Queue<Coord> q = new LinkedList<Coord>();
+		q.add(origin);
+		while(!q.isEmpty()){
+			Coord c = q.poll();
+			for (Coord neighbour : c.getNeighbors()) {
+				if (!visited.contains(neighbour) && board.isWalkable(neighbour) && !boxes.contains(neighbour)) {
+					q.add(neighbour);
+					visited.add(neighbour);
+				}
+			}
+		}
+		return visited;
 	}
 
 	/**
@@ -99,7 +131,10 @@ final public class State {
 				newBoxSet.addAll(boxes);
 				newBoxSet.remove(box);
 				newBoxSet.add(boxNeighbours[i]);
-				if (board.hasPath(player, possibleNeighbour, boxes)) {
+				//if (board.hasPath(player, possibleNeighbour, boxes)) {
+				//	neighbours.add(new State(this, board.lowestReachable(boxNeighbours[4 + i], newBoxSet), box, allDirs[i]));
+				//}
+				if(canReach(possibleNeighbour)){
 					neighbours.add(new State(this, board.lowestReachable(boxNeighbours[4 + i], newBoxSet), box, allDirs[i]));
 				}
 			}
@@ -125,6 +160,7 @@ final public class State {
 		this.boxes.add(new Coord(oldBox.y + relBoxPos.y, oldBox.x + relBoxPos.x));
 		this.player = player;
 		this.board = s.board;
+		this.allPlayer = allAdjacent(player);
 	}
 
 	public Coord[] getBoxNeighbours(Coord box) {

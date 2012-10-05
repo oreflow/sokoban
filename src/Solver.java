@@ -1,4 +1,3 @@
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,7 +14,7 @@ import java.util.Set;
  */
 public class Solver {
 	
-	public static final long TIMEOUT = 5000;
+	public static final long TIMEOUT = 1000;
 	public static long starttime;
 	
 	public static Map<State, List<State>> stateCache;
