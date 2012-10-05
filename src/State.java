@@ -17,7 +17,9 @@ final public class State {
 	final Set<Coord> boxes;
 	/** pointer to the board this state is in */
 	final Board board;
-	
+
+	final int distance;
+
 	final Set<Coord> allPlayer;
 
 	public Board getBoard() {
@@ -46,24 +48,25 @@ final public class State {
 		this.boxes = boxes;
 		this.board = board;
 		this.allPlayer = allAdjacent(player);
+		this.distance = distanceToGoal();
 	}
-	
-	public boolean canReach(Coord c){
-		if(allPlayer.size() > 0){
+
+	public boolean canReach(Coord c) {
+		if (allPlayer.size() > 0) {
 			return allPlayer.contains(c);
 		}
 		return true;
 	}
-	
-	private Set<Coord> allAdjacent(Coord origin){
+
+	private Set<Coord> allAdjacent(Coord origin) {
 		Set<Coord> visited = new HashSet<Coord>();
-		
-		if(origin == null)
+
+		if (origin == null)
 			return visited;
 		visited.add(origin);
 		Queue<Coord> q = new LinkedList<Coord>();
 		q.add(origin);
-		while(!q.isEmpty()){
+		while (!q.isEmpty()) {
 			Coord c = q.poll();
 			for (Coord neighbour : c.getNeighbors()) {
 				if (!visited.contains(neighbour) && board.isWalkable(neighbour) && !boxes.contains(neighbour)) {
@@ -73,6 +76,20 @@ final public class State {
 			}
 		}
 		return visited;
+	}
+
+	/**
+	 * Measures the distance from a state to the goal state.
+	 * 
+	 * @param origin
+	 * @return
+	 */
+	private int distanceToGoal() {
+		int total = 0;
+		for (Coord box : boxes) {
+			total += board.board[box.y][box.x];
+		}
+		return total;
 	}
 
 	/**
@@ -111,11 +128,11 @@ final public class State {
 	 * @return
 	 */
 	public List<State> getNeighbours() {
-		
-		if(Solver.stateCache.containsKey(this)){
+
+		if (Solver.stateCache.containsKey(this)) {
 			return Solver.stateCache.get(this);
 		}
-		
+
 		List<State> neighbours = new ArrayList<State>();
 
 		Coord[] allDirs = { Coord.LEFT, Coord.UP, Coord.RIGHT, Coord.DOWN };
@@ -131,10 +148,12 @@ final public class State {
 				newBoxSet.addAll(boxes);
 				newBoxSet.remove(box);
 				newBoxSet.add(boxNeighbours[i]);
-				//if (board.hasPath(player, possibleNeighbour, boxes)) {
-				//	neighbours.add(new State(this, board.lowestReachable(boxNeighbours[4 + i], newBoxSet), box, allDirs[i]));
-				//}
-				if(canReach(possibleNeighbour)){
+				// if (board.hasPath(player, possibleNeighbour, boxes)) {
+				// neighbours.add(new State(this,
+				// board.lowestReachable(boxNeighbours[4 + i], newBoxSet), box,
+				// allDirs[i]));
+				// }
+				if (canReach(possibleNeighbour)) {
 					neighbours.add(new State(this, board.lowestReachable(boxNeighbours[4 + i], newBoxSet), box, allDirs[i]));
 				}
 			}
@@ -161,6 +180,7 @@ final public class State {
 		this.player = player;
 		this.board = s.board;
 		this.allPlayer = allAdjacent(player);
+		this.distance = distanceToGoal();
 	}
 
 	public Coord[] getBoxNeighbours(Coord box) {

@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -13,10 +14,10 @@ import java.util.Set;
  * @author Brute Force. Created Oct 2, 2012.
  */
 public class Solver {
-	
-	public static final long TIMEOUT = 1000;
+
+	public static final long TIMEOUT = 10000;
 	public static long starttime;
-	
+
 	public static Map<State, List<State>> stateCache;
 
 	/**
@@ -117,7 +118,7 @@ public class Solver {
 		System.out.println("Goal state:");
 		goal.printState();
 		List<State> backwardSolution = frIDAStarSearch(start, goal);
-		if(backwardSolution == null){
+		if (backwardSolution == null) {
 			return "";
 		}
 		State temp = backwardSolution.remove(backwardSolution.size() - 1);
@@ -219,19 +220,82 @@ public class Solver {
 		return origin.getNeighbours();
 	}
 
+	private State getLowest(Collection<State> states, Map<State, Integer> values) {
+		int lowest = Integer.MAX_VALUE;
+		State low = null;
+		for (State s : states) {
+			int value = values.get(s);
+			if (value < lowest) {
+				lowest = value;
+				low = s;
+			}
+		}
+		return low;
+	}
+
 	/**
-	 * Measures the distance from a state to the goal state.
+	 * An A* Search from a state to its goal.
+	 */
+	public List<State> aStarSearch(State origin, State goal) {
+		Set<State> visited = new HashSet<State>();
+		Collection<State> openSet = new HashSet<State>();
+		openSet.add(origin);
+		Map<State, State> parents = new HashMap<State, State>();
+
+		// Cost from start along best known path.
+		Map<State, Integer> gScore = new HashMap<State, Integer>();
+		gScore.put(origin, 0);
+
+		Map<State, Integer> fScore = new HashMap<State, Integer>();
+
+		// Estimated total cost from start to goal through y.
+		fScore.put(origin, gScore.get(origin) + origin.distance);
+
+		while (!openSet.isEmpty()) {
+			if (System.currentTimeMillis() - TIMEOUT > starttime) {
+				return null;
+			}
+			State current = getLowest(openSet, fScore);
+
+			// Reached our goal.
+			if (current.distance == 0)
+				return reconstructPath(parents, current);
+
+			openSet.remove(current);
+			visited.add(current);
+			List<State> neighbours = getNeighbours(current);
+			for (State neighbour : neighbours) {
+				if (visited.contains(neighbour)) {
+					continue;
+				}
+
+				int tentativeGScore = gScore.get(current) + 1;
+
+				if (!openSet.contains(neighbour) || tentativeGScore < gScore.get(neighbour)) {
+					parents.put(neighbour, current);
+					gScore.put(neighbour, tentativeGScore);
+					fScore.put(neighbour, tentativeGScore + neighbour.distance);
+					openSet.add(neighbour);
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Constructs a path from this stuff. Very good indeed. Already backwards.
 	 * 
-	 * @param origin
+	 * @param parents
+	 * @param finalState
 	 * @return
 	 */
-	public int distanceToGoal(State origin) {
-		Board board = origin.getBoard();
-		int total = 0;
-		for (Coord box : origin.getBoxes()) {
-			total += board.board[box.y][box.x];
+	private List<State> reconstructPath(Map<State, State> parents, State finalState) {
+		List<State> path = new LinkedList<State>();
+		while (finalState != null) {
+			path.add(finalState);
+			finalState = parents.get(finalState);
 		}
-		return total;
+		return path;
 	}
 
 	/**
@@ -246,8 +310,7 @@ public class Solver {
 		boolean keepLooping = true;
 		List<State> goalPath = new ArrayList<State>();
 		goalPath.add(origin);
-		int costLimit = distanceToGoal(origin);
-
+		int costLimit = origin.distance;
 		int oldCost = costLimit - 1;
 
 		while (keepLooping) {
@@ -286,17 +349,16 @@ public class Solver {
 	 */
 	private Object[] depthLimitedSearch(int startCost, List<State> goalPath, State goal, int costLimit, Set<State> visited) {
 		// Exit on timeout
-		if(System.currentTimeMillis() - TIMEOUT > starttime){
-			return new Object[]{null, Integer.MAX_VALUE};
+		if (System.currentTimeMillis() - TIMEOUT > starttime) {
+			return new Object[] { null, Integer.MAX_VALUE };
 		}
-		
-		
+
 		// DEBUG
 		// System.out.println("IDA* Help, limit " + costLimit + ", visited " +
 		// visited.size());
 		State currentState = goalPath.get(goalPath.size() - 1);
 		visited.add(currentState);
-		int minCost = startCost + distanceToGoal(currentState);
+		int minCost = startCost + currentState.distance;
 
 		// Search exceeded the limit.
 		if (minCost > costLimit) {
@@ -306,7 +368,7 @@ public class Solver {
 		}
 
 		// Search finalized!
-		if (distanceToGoal(currentState) == 0)
+		if (currentState.distance == 0)
 			return new Object[] { goalPath, costLimit };
 
 		// Keep searching...
