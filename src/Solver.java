@@ -565,4 +565,60 @@ public class Solver {
 		return null;
 	}
 
+	/**
+	 * @param s The state to search for deadlocks
+	 * @return if there is any deadlock in the state
+	 * 
+	 * to see description of the different deadlocks, see:
+	 * 		http://www.sokobano.de/wiki/index.php?title=Deadlocks
+	 */
+	public boolean hasDeadlock(State s){
+		if(
+				isFreezeLocked(s) ||
+				isCorralLocked(s) ||
+				isBipartiteLocked(s) ||
+				isLockedBecauseOfOtherFrozenBoxesAndIsThereForeLockedThemselvesWhichIsAnnoying(s)
+				){
+			return true;
+		}
+		return false;
+	}
+	/**
+	 * @param s the state to check
+	 * @return  	true if a box in the state is Freeze-locked on a non-goal square
+	 * 					false if no box in the state is Freeze-locked on a non-goal square
+	 */
+	public boolean isFreezeLocked(State s){
+		for(Coord box : s.boxes){
+			if(this.board.goals.contains(box)){
+				continue; //if the box is on a goal square it is irrelevant to check for this kind of deadlock
+			}
+			
+		}
+		return false;
+	}
+	/**
+	 * @param s the state to check
+	 * @return  	true if a box in the state is Corral-locked on a non-goal square
+	 * 					false if no box in the state is Corral-locked on a non-goal square
+	 */
+	public boolean isCorralLocked(State s){
+		return false;
+	}
+	/**
+	 * @param s the state to check
+	 * @return  	true if a box in the state is Bipartite-locked on a non-goal square
+	 * 					false if no box in the state is Bipartite-locked on a non-goal square
+	 */
+	public boolean isBipartiteLocked(State s){
+		return false;
+	}
+	/**
+	 * @param s the state to check
+	 * @return  	true if a box in the state is locked
+	 * 					false if no box in the state is locked
+	 */
+	public boolean isLockedBecauseOfOtherFrozenBoxesAndIsThereForeLockedThemselvesWhichIsAnnoying(State s){
+		return false;
+	}
 }
