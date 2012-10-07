@@ -224,4 +224,119 @@ final public class State {
 		}
 		return true;
 	}
+	
+	/**
+	 * @param s The state to search for deadlocks
+	 * @return if there is any deadlock in the state
+	 * 
+	 * to see description of the different deadlocks, see:
+	 * 		http://www.sokobano.de/wiki/index.php?title=Deadlocks
+	 */
+	public boolean hasDeadlock(){
+		if(
+				isFreezeLocked() ||
+				isCorralLocked() ||
+				isBipartiteLocked() ||
+				isLockedBecauseOfOtherFrozenBoxesAndIsThereForeLockedThemselvesWhichIsAnnoying()
+				){
+			return true;
+		}
+		return false;
+	}
+	/**
+	 * @param s the state to check
+	 * @return  	true if a box in the state is Freeze-locked on a non-goal square
+	 * 					false if no box in the state is Freeze-locked on a non-goal square
+	 */
+	public boolean isFreezeLocked(){
+		/*Set<Coord> t = s.getBoxes();
+		
+		for(){
+			if(this.board.goals.contains(box)){
+				continue; //if the box is on a goal square it is irrelevant to check for this kind of deadlock
+			}
+
+			if(isFreezeLocked(s.getBoxes(),box))
+				return true;
+			
+		}
+		*/
+		return false;
+	}
+	/**
+	 * 
+	 * Help method for the above, so that it can be used recursively
+	 *
+	 * counts on the fact that a box is locked in X-position if 1 case of 3 is true
+	 *  * The box has a wall to the right or left of it
+	 *  * The box has a frozen box to the left of it
+	 *  * The box has a frozen box to the right of it
+	 *  and a box is locked in Y-position if 1 case of 3 is true
+	 *  * The box has a wall above or below it
+	 *  * The box has a frozen box above it
+	 *  * The box has a frozen box below it
+	 *
+	 * @param c
+	 * @return if the box is frozen
+	 */
+	public boolean isFreezeLocked(Coord c){
+		/*
+		boxes.remove(c); // removes itself to not get stuck in a endless loop
+		boolean xLocked = false, yLocked = false;
+		Coord L = c.relL();
+		Coord R = c.relR();
+		if(this.board.get(L) == -1 || this.board.get(R) == -1){
+			xLocked = true;  // box is next to a wall
+		}
+		if(boxes.contains(L) && isFreezeLocked(boxes,L)){
+			xLocked = true;	// there is a box to the left which is freezelocked
+		}
+		if(boxes.contains(R) && isFreezeLocked(boxes,R)){
+			xLocked = true;	// there is a box to the right which is freezelocked
+		}
+		
+		Coord U = c.relU();
+		Coord D = c.relD();
+		if(this.board.get(U) == -1 || this.board.get(D) == -1){
+			yLocked = true;  // box is above or below a wall
+		}
+		if(boxes.contains(U) && isFreezeLocked(boxes,U)){
+			yLocked = true;	// there is a box above which is freezelocked
+		}
+		if(boxes.contains(D) && isFreezeLocked(boxes,D)){
+			yLocked = true;	// there is a box to the right which is freezelocked
+		}
+			
+			
+			
+		if(xLocked && yLocked)
+			return true;
+			*/
+		return false;
+	}
+	/**
+	 * @param s the state to check
+	 * @return  	true if a box in the state is Corral-locked on a non-goal square
+	 * 					false if no box in the state is Corral-locked on a non-goal square
+	 */
+	public boolean isCorralLocked(){
+		return false;
+	}
+	/**
+	 * @param s the state to check
+	 * @return  	true if a box in the state is Bipartite-locked on a non-goal square
+	 * 					false if no box in the state is Bipartite-locked on a non-goal square
+	 */
+	public boolean isBipartiteLocked(){
+		return false;
+	}
+	/**
+	 * @param s the state to check
+	 * @return  	true if a box in the state is locked
+	 * 					false if no box in the state is locked
+	 */
+	public boolean isLockedBecauseOfOtherFrozenBoxesAndIsThereForeLockedThemselvesWhichIsAnnoying(){
+		return false;
+	}
+	
 }
