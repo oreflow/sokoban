@@ -381,6 +381,10 @@ public class Solver {
 				// System.out.println("Visited already.");
 				continue;
 			}
+			if(hasDeadlock(state)){
+				visited.add(state);
+				continue;
+			}
 			// System.out.println("Neighbour: ");
 			// state.printState();
 			int newStartCost = startCost + 1;
