@@ -162,6 +162,7 @@ final public class State {
 		Solver.stateCache.put(this, neighbours);
 		return neighbours;
 	}
+	
 
 	/**
 	 * Creates a new state, with specified player position and a box that has
@@ -232,12 +233,13 @@ final public class State {
 	 * to see description of the different deadlocks, see:
 	 * 		http://www.sokobano.de/wiki/index.php?title=Deadlocks
 	 */
-	public boolean hasDeadlock(){
+	public boolean hasDeadlock(State start){
 		if(
-				isFreezeLocked() ||
+				isFreezeLocked(start) || //pointless method? 
 				isCorralLocked() ||
 				isBipartiteLocked() ||
-				isLockedBecauseOfOtherFrozenBoxesAndIsThereForeLockedThemselvesWhichIsAnnoying()
+				isLockedBecauseOfOtherFrozenBoxesAndIsThereForeLockedThemselvesWhichIsAnnoying() ||
+				closedDiagonalLock()
 				){
 			return true;
 		}
@@ -248,50 +250,57 @@ final public class State {
 	 * @return  	true if a box in the state is Freeze-locked on a non-goal square
 	 * 					false if no box in the state is Freeze-locked on a non-goal square
 	 */
-	public boolean isFreezeLocked(){
-		/*Set<Coord> t = s.getBoxes();
+	public boolean isFreezeLocked(State start){
 		
-		for(){
+		for(Coord box : this.boxes){
 			if(this.board.goals.contains(box)){
 				continue; //if the box is on a goal square it is irrelevant to check for this kind of deadlock
 			}
-
-			if(isFreezeLocked(s.getBoxes(),box))
+			
+			if(isFreezeLocked(box,new HashSet<Coord>(),start)){
+				System.out.println(box);
 				return true;
+			}
 			
 		}
-		*/
 		return false;
 	}
 	/**
 	 * 
 	 * Help method for the above, so that it can be used recursively
 	 *
-	 * counts on the fact that a box is locked in X-position if 1 case of 3 is true
+	 * counts on the fact that a box is locked in X-position if 1 or more case of 3 is true
 	 *  * The box has a wall to the right or left of it
 	 *  * The box has a frozen box to the left of it
 	 *  * The box has a frozen box to the right of it
-	 *  and a box is locked in Y-position if 1 case of 3 is true
+	 *  and a box is locked in Y-position if 1 or more case of 3 is true
 	 *  * The box has a wall above or below it
 	 *  * The box has a frozen box above it
 	 *  * The box has a frozen box below it
-	 *
+	 *  
 	 * @param c
+	 * @param visited 
 	 * @return if the box is frozen
 	 */
-	public boolean isFreezeLocked(Coord c){
-		/*
-		boxes.remove(c); // removes itself to not get stuck in a endless loop
+	public boolean isFreezeLocked(Coord c, Set<Coord> visited, State start){
+		
+		if(visited.contains(c)){
+			return true;
+		}
+		visited.add(c); // adds itself to the list of visited boxes to avoid endless loops
+		if(start.boxes.contains(c))
+			return false;
+		
 		boolean xLocked = false, yLocked = false;
 		Coord L = c.relL();
 		Coord R = c.relR();
 		if(this.board.get(L) == -1 || this.board.get(R) == -1){
 			xLocked = true;  // box is next to a wall
 		}
-		if(boxes.contains(L) && isFreezeLocked(boxes,L)){
+		if(this.boxes.contains(L) && isFreezeLocked(L,visited,start)){
 			xLocked = true;	// there is a box to the left which is freezelocked
 		}
-		if(boxes.contains(R) && isFreezeLocked(boxes,R)){
+		if(this.boxes.contains(R) && isFreezeLocked(R,visited,start)){
 			xLocked = true;	// there is a box to the right which is freezelocked
 		}
 		
@@ -300,19 +309,18 @@ final public class State {
 		if(this.board.get(U) == -1 || this.board.get(D) == -1){
 			yLocked = true;  // box is above or below a wall
 		}
-		if(boxes.contains(U) && isFreezeLocked(boxes,U)){
+		if(this.boxes.contains(U) && isFreezeLocked(U,visited,start)){
 			yLocked = true;	// there is a box above which is freezelocked
 		}
-		if(boxes.contains(D) && isFreezeLocked(boxes,D)){
+		if(this.boxes.contains(D) && isFreezeLocked(D,visited,start)){
 			yLocked = true;	// there is a box to the right which is freezelocked
 		}
 			
-			
-			
 		if(xLocked && yLocked)
 			return true;
-			*/
+		
 		return false;
+		
 	}
 	/**
 	 * @param s the state to check
@@ -338,5 +346,15 @@ final public class State {
 	public boolean isLockedBecauseOfOtherFrozenBoxesAndIsThereForeLockedThemselvesWhichIsAnnoying(){
 		return false;
 	}
+	
+	/**
+	 * @param s the state to check
+	 * @return  	true if a box in the state is locked
+	 * 					false if no box in the state is locked
+	 */
+	public boolean closedDiagonalLock(){
+		return false;
+	}
+	
 	
 }

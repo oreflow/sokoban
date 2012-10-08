@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public class Solver {
 
-	public static final long TIMEOUT = 10000;
+	public static final long TIMEOUT = 60000;
 	public static long starttime;
 
 	public static Map<State, List<State>> stateCache;
@@ -117,7 +117,7 @@ public class Solver {
 		start.printState();
 		System.out.println("Goal state:");
 		goal.printState();
-		this.board.printNumbers();
+		
 		List<State> backwardSolution = frIDAStarSearch(start, goal);
 		if (backwardSolution == null) {
 			return "";
@@ -382,8 +382,9 @@ public class Solver {
 				// System.out.println("Visited already.");
 				continue;
 			}
-			if(state.hasDeadlock()){
+			if(state.hasDeadlock(this.start)){
 				visited.add(state);
+				state.printState();
 				continue;
 			}
 			// System.out.println("Neighbour: ");
