@@ -36,6 +36,7 @@ public class Solver {
 	Coord playerOrigin;
 
 	Coord playerPos;
+	HashMap<State,State> visited;
 
 	// public static void main(String[] args) {
 	// Solver solver = new Solver(null);
@@ -51,52 +52,10 @@ public class Solver {
 	public Solver(ArrayList<String> input) {
 		starttime = System.currentTimeMillis();
 		initialize(input, true);
+		visited = new HashMap<State,State>();
 	}
 
-	public void testPlayerMovement() {
-
-		ArrayList<String> arrBoard = createArrBoard();
-
-		initialize(arrBoard, false);
-
-		ArrayList<State> states = createTestStates();
-
-		String solution = playerMovements(states);
-		System.out.println("Solution: " + solution);
-	}
-
-	public ArrayList<String> createArrBoard() {
-		ArrayList<String> arrBoard = new ArrayList<String>();
-		arrBoard.add("#########");
-		arrBoard.add("# @     #");
-		arrBoard.add("#   ..  #");
-		arrBoard.add("#  $$   #");
-		arrBoard.add("#       #");
-		arrBoard.add("#########");
-		return arrBoard;
-	}
-
-	public void testState() {
-		ArrayList<String> arrBoard = createArrBoard();
-		initialize(arrBoard, true);
-
-		System.out.println("Start: ");
-		start.printState();
-		System.out.println("Goal: ");
-		goal.printState();
-
-		List<State> states = frIDAStarSearch(start, goal);
-		System.out.println("States in solution: ");
-		for (State s : states) {
-			s.printState();
-		}
-		List<State> reverseStates = new LinkedList<State>();
-		for (State s : states) {
-			reverseStates.add(0, s);
-		}
-		String solution = playerMovements(reverseStates);
-		System.out.println(solution);
-	}
+	
 
 	private List<State> reverse(List<State> input) {
 		LinkedList<State> output = new LinkedList<State>();
@@ -118,18 +77,21 @@ public class Solver {
 		System.out.println("Goal state:");
 		goal.printState();
 		
-		List<State> backwardSolution = frIDAStarSearch(start, goal);
-		if (backwardSolution == null) {
-			return "";
+		State current = frIDAStarSearch();
+		List<State> path = new LinkedList<State>();
+		
+		visited.get(current).printState();
+		while(current != null){
+			path.add(current);
+			//current.printState();
+			current = visited.get(current);
 		}
-		State temp = backwardSolution.remove(backwardSolution.size() - 1);
-		backwardSolution.add(new State(playerOrigin, temp.boxes, temp.board));
-		System.out.println("Backwards: ");
-		for (State s : backwardSolution) {
-			s.printState();
+		List<State> reverseList = new LinkedList<State>();
+		for(State s : path){
+			reverseList.add(s);
 		}
-		List<State> solution = reverse(backwardSolution);
-		return playerMovements(solution);
+		
+		return playerMovements(reverseList);
 	}
 
 	private void initialize(ArrayList<String> list, boolean reverse) {
@@ -235,55 +197,6 @@ public class Solver {
 	}
 
 	/**
-	 * An A* Search from a state to its goal.
-	 */
-	public List<State> aStarSearch(State origin, State goal) {
-		Set<State> visited = new HashSet<State>();
-		Collection<State> openSet = new HashSet<State>();
-		openSet.add(origin);
-		Map<State, State> parents = new HashMap<State, State>();
-
-		// Cost from start along best known path.
-		Map<State, Integer> gScore = new HashMap<State, Integer>();
-		gScore.put(origin, 0);
-
-		Map<State, Integer> fScore = new HashMap<State, Integer>();
-
-		// Estimated total cost from start to goal through y.
-		fScore.put(origin, gScore.get(origin) + origin.distance);
-
-		while (!openSet.isEmpty()) {
-			if (System.currentTimeMillis() - TIMEOUT > starttime) {
-				return null;
-			}
-			State current = getLowest(openSet, fScore);
-
-			// Reached our goal.
-			if (current.distance == 0)
-				return reconstructPath(parents, current);
-
-			openSet.remove(current);
-			visited.add(current);
-			List<State> neighbours = getNeighbours(current);
-			for (State neighbour : neighbours) {
-				if (visited.contains(neighbour)) {
-					continue;
-				}
-
-				int tentativeGScore = gScore.get(current) + 1;
-
-				if (!openSet.contains(neighbour) || tentativeGScore < gScore.get(neighbour)) {
-					parents.put(neighbour, current);
-					gScore.put(neighbour, tentativeGScore);
-					fScore.put(neighbour, tentativeGScore + neighbour.distance);
-					openSet.add(neighbour);
-				}
-			}
-		}
-		return null;
-	}
-
-	/**
 	 * Constructs a path from this stuff. Very good indeed. Already backwards.
 	 * 
 	 * @param parents
@@ -292,6 +205,7 @@ public class Solver {
 	 */
 	private List<State> reconstructPath(Map<State, State> parents, State finalState) {
 		List<State> path = new LinkedList<State>();
+		
 		while (finalState != null) {
 			path.add(finalState);
 			finalState = parents.get(finalState);
@@ -306,12 +220,10 @@ public class Solver {
 	 * @return The list of states that will reach the goal.
 	 */
 	@SuppressWarnings("unchecked")
-	public List<State> frIDAStarSearch(State origin, State goal) {
-
+	public State frIDAStarSearch() {
+		
 		boolean keepLooping = true;
-		List<State> goalPath = new ArrayList<State>();
-		goalPath.add(origin);
-		int costLimit = origin.distance;
+		int costLimit = start.distance;
 		int oldCost = costLimit - 1;
 
 		while (keepLooping) {
@@ -319,11 +231,11 @@ public class Solver {
 				System.out.println("Searching with depth " + costLimit);
 				oldCost = costLimit;
 			}
-			Set<State> visited = new HashSet<State>();
-			visited.add(origin);
-			Object[] result = depthLimitedSearch(0, goalPath, goal, costLimit, visited);
+			visited = new HashMap<State,State>();
 
-			List<State> solution = (List<State>) result[0];
+			Object[] result = depthLimitedSearch(0, start, goal, costLimit);
+
+			State solution = (State) result[0];
 			costLimit = (Integer) result[1];
 
 			// Search failed, returns null.
@@ -348,53 +260,37 @@ public class Solver {
 	 * 
 	 * @return Array of {Solution (List<State>), Cost limit (Integer)}
 	 */
-	private Object[] depthLimitedSearch(int startCost, List<State> goalPath, State goal, int costLimit, Set<State> visited) {
+	private Object[] depthLimitedSearch(int startCost,State current, State goal, int costLimit) {
 		// Exit on timeout
 		if (System.currentTimeMillis() - TIMEOUT > starttime) {
 			return new Object[] { null, Integer.MAX_VALUE };
 		}
 
-		// DEBUG
-		// System.out.println("IDA* Help, limit " + costLimit + ", visited " +
-		// visited.size());
-		State currentState = goalPath.get(goalPath.size() - 1);
-		visited.add(currentState);
-		int minCost = startCost + currentState.distance;
+		visited.put(current,null);
+		//System.out.println(visited.size());
+		int minCost = startCost + current.distance;
 
 		// Search exceeded the limit.
 		if (minCost > costLimit) {
-			// Good java practice.
-			// System.out.println("Limit exceeded");
 			return new Object[] { null, minCost };
 		}
 
 		// Search finalized!
-		if (currentState.distance == 0)
-			return new Object[] { goalPath, costLimit };
+		if (current.distance == 0)
+			return new Object[] { current, costLimit };
 
 		// Keep searching...
 		int nextCostLimit = Integer.MAX_VALUE;
-		List<State> neighbours = getNeighbours(currentState);
-		// System.out.println("Looking in state:");
-		// currentState.printState();
-		for (State state : neighbours) {
-			if (visited.contains(state)) {
-				// System.out.println("Visited already.");
+		
+		for (State state : current.getNeighbours()) {
+			if (visited.containsKey(state)) {
 				continue;
 			}
-			if(state.hasDeadlock(this.start)){
-				visited.add(state);
-				state.printState();
-				continue;
-			}
-			// System.out.println("Neighbour: ");
-			// state.printState();
 			int newStartCost = startCost + 1;
-			List<State> newGoalPath = new ArrayList<State>();
-			newGoalPath.addAll(goalPath);
-			newGoalPath.add(state);
-			Object[] result = depthLimitedSearch(newStartCost, newGoalPath, goal, costLimit, visited);
-
+			
+			Object[] result = depthLimitedSearch(newStartCost, state, goal, costLimit);
+			
+			visited.put(state,current);
 			// Search finalized!
 			if (result[0] != null) {
 				return result;
