@@ -10,7 +10,7 @@ import java.util.Set;
  * 
  * @author Brute Force. Created Sep 20, 2012.
  */
-final public class State {
+final public class State implements Comparable<State> {
 	/** position of the player in this state */
 	final Coord player;
 	/** positions of the boxes in this state */
@@ -19,6 +19,8 @@ final public class State {
 	final Board board;
 
 	final int distance;
+	
+	final int goalCount;
 
 	final Set<Coord> allPlayer;
 
@@ -49,6 +51,17 @@ final public class State {
 		this.board = board;
 		this.allPlayer = allAdjacent(player);
 		this.distance = distanceToGoal();
+		this.goalCount = goalCount();
+	}
+	
+	private int goalCount(){
+		int goalCount = 0;
+		for(Coord c : boxes){
+			if(board.goals.contains(c)){
+				goalCount++;
+			}
+		}
+		return goalCount;
 	}
 
 	public boolean canReach(Coord c) {
@@ -149,7 +162,8 @@ final public class State {
 				newBoxSet.remove(box);
 				newBoxSet.add(boxNeighbours[i]);
 				State s = new State(board.lowestReachable(boxNeighbours[i + 4], newBoxSet), newBoxSet, board);
-				neighbours.add(s);
+				if(!Solver.stateCache.containsKey(this))
+					neighbours.add(s);
 			}
 		}
 
@@ -175,6 +189,7 @@ final public class State {
 		this.board = s.board;
 		this.allPlayer = allAdjacent(player);
 		this.distance = distanceToGoal();
+		this.goalCount = goalCount();
 	}
 
 	public Coord[] getBoxNeighbours(Coord box) {
@@ -359,6 +374,11 @@ final public class State {
 	 */
 	public boolean closedDiagonalLock() {
 		return false;
+	}
+
+	@Override
+	public int compareTo(State other) {
+		return (other.goalCount - this.goalCount)<<20 + (other.distance - this.distance);
 	}
 
 }

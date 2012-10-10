@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Set;
 
 /**
@@ -15,8 +16,10 @@ import java.util.Set;
  */
 public class Solver {
 
-	public static final long TIMEOUT = 1000;
+	public static final long TIMEOUT = 60000;
 	public static long starttime;
+	
+	static final int DEPTH_INCREMENT = 8;
 
 	public static Map<State, List<State>> stateCache;
 
@@ -75,7 +78,8 @@ public class Solver {
 		System.out.println("Goal state:");
 		goal.printState();
 
-		State current = frIDAStarSearch();
+		//State current = frIDAStarSearch();
+		State current = directedDFS();
 		List<State> path = new LinkedList<State>();
 
 		if (current == null)
@@ -83,7 +87,7 @@ public class Solver {
 		visited.get(current).printState();
 		while (current != null) {
 			path.add(current);
-			// current.printState();
+			//current.printState();
 			current = visited.get(current);
 		}
 		List<State> reverseList = new LinkedList<State>();
@@ -230,8 +234,8 @@ public class Solver {
 
 		while (keepLooping) {
 			if (oldCost < costLimit) {
-				if (costLimit - oldCost < 5)
-					costLimit = oldCost + 5;
+				if (costLimit - oldCost < DEPTH_INCREMENT)
+					costLimit = oldCost + DEPTH_INCREMENT;
 				System.out.println("Searching with depth " + costLimit);
 				oldCost = costLimit;
 			}
@@ -288,8 +292,11 @@ public class Solver {
 		}
 		// Keep searching...
 		int nextCostLimit = Integer.MAX_VALUE;
+		
+		PriorityQueue<State> q = new PriorityQueue<State>();
+		q.addAll(current.getNeighbours());
 
-		for (State state : current.getNeighbours()) {
+		for (State state : q) {
 			if (visited.containsKey(state)) {
 				continue;
 			}
@@ -311,6 +318,36 @@ public class Solver {
 
 	}
 
+	private State directedDFS() {
+		PriorityQueue<State> q = new PriorityQueue<State>();
+		q.add(start);
+		
+		visited = new HashMap<State, State>();
+		visited.put(start, null);
+		
+		while(!q.isEmpty()){
+			// Exit on timeout
+			if (System.currentTimeMillis() - TIMEOUT > starttime) {
+				return null;
+			}
+			
+			State c = q.poll();
+			if(c.equals(goal)){
+				return c;
+			}
+			
+			c.printState();
+
+			List<State> neighbours = c.getNeighbours();
+			for(State s : neighbours){
+				if(!visited.containsKey(s)){
+					visited.put(s, c);
+					q.add(s);
+				}
+			}
+		}
+		return null;
+	}
 	// Creates some test states for playerMovements
 	ArrayList<State> createTestStates() {
 
