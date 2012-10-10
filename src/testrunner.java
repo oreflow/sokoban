@@ -35,7 +35,7 @@ public class testrunner {
 		int wins = 0;
 
 		for (int i = 1; i <= games; i++) {
-			c = new Client("dd2380.csc.kth.se",port, ""+i);
+			c = new Client("dd2380.csc.kth.se", port, "" + i);
 			System.setOut(originalOut);
 			tmp = baos.toString();
 			if (tmp.contains("CORRECT")) {

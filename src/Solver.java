@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public class Solver {
 
-	public static final long TIMEOUT = 60000;
+	public static final long TIMEOUT = 1000;
 	public static long starttime;
 
 	public static Map<State, List<State>> stateCache;
@@ -36,7 +36,7 @@ public class Solver {
 	Coord playerOrigin;
 
 	Coord playerPos;
-	HashMap<State,State> visited;
+	HashMap<State, State> visited;
 
 	// public static void main(String[] args) {
 	// Solver solver = new Solver(null);
@@ -52,10 +52,8 @@ public class Solver {
 	public Solver(ArrayList<String> input) {
 		starttime = System.currentTimeMillis();
 		initialize(input, true);
-		visited = new HashMap<State,State>();
+		visited = new HashMap<State, State>();
 	}
-
-	
 
 	private List<State> reverse(List<State> input) {
 		LinkedList<State> output = new LinkedList<State>();
@@ -76,21 +74,26 @@ public class Solver {
 		start.printState();
 		System.out.println("Goal state:");
 		goal.printState();
-		
+
 		State current = frIDAStarSearch();
 		List<State> path = new LinkedList<State>();
-		
+
+		if (current == null)
+			return "";
 		visited.get(current).printState();
-		while(current != null){
+		while (current != null) {
 			path.add(current);
-			//current.printState();
+			// current.printState();
 			current = visited.get(current);
 		}
 		List<State> reverseList = new LinkedList<State>();
-		for(State s : path){
+		for (State s : path) {
 			reverseList.add(s);
 		}
-		
+
+		State temp = reverseList.remove(0);
+		reverseList.add(0, new State(playerOrigin, temp.boxes, temp.board));
+
 		return playerMovements(reverseList);
 	}
 
@@ -102,7 +105,6 @@ public class Solver {
 		for (String str : list) {
 			if (str.length() > xSize)
 				xSize = str.length();
-
 		}
 		ArrayList<Character> walkableCharSet = new ArrayList<Character>() {
 			{
@@ -205,7 +207,7 @@ public class Solver {
 	 */
 	private List<State> reconstructPath(Map<State, State> parents, State finalState) {
 		List<State> path = new LinkedList<State>();
-		
+
 		while (finalState != null) {
 			path.add(finalState);
 			finalState = parents.get(finalState);
@@ -221,17 +223,19 @@ public class Solver {
 	 */
 	@SuppressWarnings("unchecked")
 	public State frIDAStarSearch() {
-		
+
 		boolean keepLooping = true;
 		int costLimit = start.distance;
 		int oldCost = costLimit - 1;
 
 		while (keepLooping) {
 			if (oldCost < costLimit) {
+				if (costLimit - oldCost < 5)
+					costLimit = oldCost + 5;
 				System.out.println("Searching with depth " + costLimit);
 				oldCost = costLimit;
 			}
-			visited = new HashMap<State,State>();
+			visited = new HashMap<State, State>();
 
 			Object[] result = depthLimitedSearch(0, start, goal, costLimit);
 
@@ -260,14 +264,14 @@ public class Solver {
 	 * 
 	 * @return Array of {Solution (List<State>), Cost limit (Integer)}
 	 */
-	private Object[] depthLimitedSearch(int startCost,State current, State goal, int costLimit) {
+	private Object[] depthLimitedSearch(int startCost, State current, State goal, int costLimit) {
 		// Exit on timeout
 		if (System.currentTimeMillis() - TIMEOUT > starttime) {
 			return new Object[] { null, Integer.MAX_VALUE };
 		}
 
-		visited.put(current,null);
-		//System.out.println(visited.size());
+		visited.put(current, null);
+		// System.out.println(visited.size());
 		int minCost = startCost + current.distance;
 
 		// Search exceeded the limit.
@@ -276,21 +280,24 @@ public class Solver {
 		}
 
 		// Search finalized!
-		if (current.distance == 0)
-			return new Object[] { current, costLimit };
-
+		if (current.distance == 0) {
+			if (current.equals((goal)))
+				return new Object[] { current, costLimit };
+			else
+				System.out.println(("Distance 0 but not goal..."));
+		}
 		// Keep searching...
 		int nextCostLimit = Integer.MAX_VALUE;
-		
+
 		for (State state : current.getNeighbours()) {
 			if (visited.containsKey(state)) {
 				continue;
 			}
 			int newStartCost = startCost + 1;
-			
+
 			Object[] result = depthLimitedSearch(newStartCost, state, goal, costLimit);
-			
-			visited.put(state,current);
+
+			visited.put(state, current);
 			// Search finalized!
 			if (result[0] != null) {
 				return result;
@@ -467,5 +474,4 @@ public class Solver {
 		return null;
 	}
 
-	
 }

@@ -35,10 +35,14 @@ public class Client {
 			for (int i = 0; i < rows; i++) {
 				lLine = lIn.readLine();
 				list.add(lLine);
+				System.out.println(lLine);
 			}
 
 			Solver solver = new Solver(list);
 			String solution = solver.solve();
+
+			System.out.println("Solution: " + solution);
+			System.out.println("Time: " + (double) (System.currentTimeMillis() - Solver.starttime) / 1000);
 
 			lOut.println(solution);
 			lOut.flush();
