@@ -30,6 +30,7 @@ public class Client {
 			// System.out.println();
 
 			String lLine = lIn.readLine();
+			System.out.println("Original:");
 			System.out.println(lLine);
 			int rows = Integer.parseInt(lLine);
 			for (int i = 0; i < rows; i++) {

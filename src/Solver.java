@@ -16,10 +16,11 @@ import java.util.Set;
  */
 public class Solver {
 
-	public static final long TIMEOUT = 60000;
+	public static final long TIMEOUT = 000;
+	public static final long TIMEOUT2 = 1000;
 	public static long starttime;
-	
-	static final int DEPTH_INCREMENT = 8;
+
+	static final int DEPTH_INCREMENT = 5;
 
 	public static Map<State, List<State>> stateCache;
 
@@ -54,16 +55,8 @@ public class Solver {
 	 */
 	public Solver(ArrayList<String> input) {
 		starttime = System.currentTimeMillis();
-		initialize(input, true);
+		initialize(input);
 		visited = new HashMap<State, State>();
-	}
-
-	private List<State> reverse(List<State> input) {
-		LinkedList<State> output = new LinkedList<State>();
-		for (State o : input) {
-			output.addFirst(o);
-		}
-		return output;
 	}
 
 	/**
@@ -73,21 +66,25 @@ public class Solver {
 	 *         game
 	 */
 	public String solve() {
-		System.out.println("Starting state:");
-		start.printState();
-		System.out.println("Goal state:");
-		goal.printState();
+//		System.out.println("Starting state:");
+//		start.printState();
+//		System.out.println("Goal state:");
+//		goal.printState();
 
-		//State current = frIDAStarSearch();
-		State current = directedDFS();
+		State current = frIDAStarSearch();
+		if (current == null){
+			visited = new HashMap<State, State>();
+			current = directedDFS();
+		}
 		List<State> path = new LinkedList<State>();
 
 		if (current == null)
 			return "";
-		visited.get(current).printState();
+
+		
+		//visited.get(current).printState();
 		while (current != null) {
 			path.add(current);
-			//current.printState();
 			current = visited.get(current);
 		}
 		List<State> reverseList = new LinkedList<State>();
@@ -98,10 +95,15 @@ public class Solver {
 		State temp = reverseList.remove(0);
 		reverseList.add(0, new State(playerOrigin, temp.boxes, temp.board));
 
+		System.out.println("Path:");
+		for(State s : reverseList){
+			s.printState();
+		}
+
 		return playerMovements(reverseList);
 	}
 
-	private void initialize(ArrayList<String> list, boolean reverse) {
+	private void initialize(ArrayList<String> list) {
 
 		stateCache = new HashMap<State, List<State>>();
 		int xSize = 0;
@@ -166,16 +168,10 @@ public class Solver {
 				}
 			}
 		}
-
-		if (!reverse) {
-			this.board = new Board(b, goalSet, player);
-			this.start = new State(player, startBoxes, board);
-			this.goal = new State(player, goalSet, board);
-		} else {
-			this.board = new Board(b, startBoxes, player);
-			this.start = new State(null, goalSet, board);
-			this.goal = new State(board.lowestReachable(player, goalSet), startBoxes, board);
-		}
+		this.board = new Board(b, startBoxes, player);
+		this.start = new State(null, goalSet, board);
+		this.goal = new State(board.lowestReachable(player, goalSet),
+				startBoxes, board);
 		playerOrigin = player;
 	}
 
@@ -187,36 +183,6 @@ public class Solver {
 	 */
 	public List<State> getNeighbours(State origin) {
 		return origin.getNeighbours();
-	}
-
-	private State getLowest(Collection<State> states, Map<State, Integer> values) {
-		int lowest = Integer.MAX_VALUE;
-		State low = null;
-		for (State s : states) {
-			int value = values.get(s);
-			if (value < lowest) {
-				lowest = value;
-				low = s;
-			}
-		}
-		return low;
-	}
-
-	/**
-	 * Constructs a path from this stuff. Very good indeed. Already backwards.
-	 * 
-	 * @param parents
-	 * @param finalState
-	 * @return
-	 */
-	private List<State> reconstructPath(Map<State, State> parents, State finalState) {
-		List<State> path = new LinkedList<State>();
-
-		while (finalState != null) {
-			path.add(finalState);
-			finalState = parents.get(finalState);
-		}
-		return path;
 	}
 
 	/**
@@ -236,7 +202,7 @@ public class Solver {
 			if (oldCost < costLimit) {
 				if (costLimit - oldCost < DEPTH_INCREMENT)
 					costLimit = oldCost + DEPTH_INCREMENT;
-				System.out.println("Searching with depth " + costLimit);
+//				System.out.println("Searching with depth " + costLimit);
 				oldCost = costLimit;
 			}
 			visited = new HashMap<State, State>();
@@ -268,7 +234,8 @@ public class Solver {
 	 * 
 	 * @return Array of {Solution (List<State>), Cost limit (Integer)}
 	 */
-	private Object[] depthLimitedSearch(int startCost, State current, State goal, int costLimit) {
+	private Object[] depthLimitedSearch(int startCost, State current,
+			State goal, int costLimit) {
 		// Exit on timeout
 		if (System.currentTimeMillis() - TIMEOUT > starttime) {
 			return new Object[] { null, Integer.MAX_VALUE };
@@ -292,7 +259,7 @@ public class Solver {
 		}
 		// Keep searching...
 		int nextCostLimit = Integer.MAX_VALUE;
-		
+
 		PriorityQueue<State> q = new PriorityQueue<State>();
 		q.addAll(current.getNeighbours());
 
@@ -302,7 +269,8 @@ public class Solver {
 			}
 			int newStartCost = startCost + 1;
 
-			Object[] result = depthLimitedSearch(newStartCost, state, goal, costLimit);
+			Object[] result = depthLimitedSearch(newStartCost, state, goal,
+					costLimit);
 
 			visited.put(state, current);
 			// Search finalized!
@@ -321,26 +289,25 @@ public class Solver {
 	private State directedDFS() {
 		PriorityQueue<State> q = new PriorityQueue<State>();
 		q.add(start);
-		
+
 		visited = new HashMap<State, State>();
 		visited.put(start, null);
-		
-		while(!q.isEmpty()){
+
+		while (!q.isEmpty()) {
 			// Exit on timeout
-			if (System.currentTimeMillis() - TIMEOUT > starttime) {
+			if (System.currentTimeMillis() - TIMEOUT2 > starttime) {
 				return null;
 			}
-			
+
 			State c = q.poll();
-			if(c.equals(goal)){
+			//c.printState();
+			if (c.equals(goal)) {
 				return c;
 			}
-			
-			c.printState();
 
 			List<State> neighbours = c.getNeighbours();
-			for(State s : neighbours){
-				if(!visited.containsKey(s)){
+			for (State s : neighbours) {
+				if (!visited.containsKey(s)) {
 					visited.put(s, c);
 					q.add(s);
 				}
@@ -348,6 +315,7 @@ public class Solver {
 		}
 		return null;
 	}
+
 	// Creates some test states for playerMovements
 	ArrayList<State> createTestStates() {
 
@@ -474,7 +442,9 @@ public class Solver {
 		}
 
 		// Last state, make player go to that states player position
-		String solutionPart = bfs(playerPos, states.get(states.size() - 1).player, states.get(states.size() - 1));
+		String solutionPart = bfs(playerPos,
+				states.get(states.size() - 1).player,
+				states.get(states.size() - 1));
 		solution = solution + solutionPart;
 		return solution.replace("null", "");
 	}
@@ -498,7 +468,8 @@ public class Solver {
 			Coord[] neighs = head.getNeighbors();
 			for (int j = 0; j < neighs.length; j++) {
 				Coord neighbour = neighs[j];
-				if (!boxes.contains(neighbour) && this.board.board[neighbour.y][neighbour.x] != -1) {
+				if (!boxes.contains(neighbour)
+						&& this.board.board[neighbour.y][neighbour.x] != -1) {
 					if (!visited.contains(neighbour)) {
 						visited.add(neighbour);
 						parents.put(neighbour, head);

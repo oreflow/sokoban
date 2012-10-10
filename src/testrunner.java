@@ -41,8 +41,11 @@ public class testrunner {
 			if (tmp.contains("CORRECT")) {
 				System.out.print("x");
 				wins++;
-			} else
+			} else if(tmp.contains("WRONG")){
+				System.out.print("o");	
+			}else{
 				System.out.print("-");
+			}
 
 			baos.reset();
 			System.setOut(newOut);
