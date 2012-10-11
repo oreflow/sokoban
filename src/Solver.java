@@ -16,8 +16,8 @@ import java.util.Set;
  */
 public class Solver {
 
-	public static final long TIMEOUT = 000;
-	public static final long TIMEOUT2 = 1000;
+	public static final long TIMEOUT = 15000;
+	public static final long TIMEOUT2 = 62000;
 	public static long starttime;
 
 	static final int DEPTH_INCREMENT = 5;
@@ -92,13 +92,15 @@ public class Solver {
 			reverseList.add(s);
 		}
 
+//		State temp = reverseList.remove(reverseList.size()-1);
+//		reverseList.add(reverseList.size(), new State(playerOrigin, temp.boxes, temp.board));
 		State temp = reverseList.remove(0);
 		reverseList.add(0, new State(playerOrigin, temp.boxes, temp.board));
 
-		System.out.println("Path:");
-		for(State s : reverseList){
-			s.printState();
-		}
+//		System.out.println("Path:");
+//		for(State s : reverseList){
+//			s.printState();
+//		}
 
 		return playerMovements(reverseList);
 	}
@@ -170,7 +172,7 @@ public class Solver {
 		}
 		this.board = new Board(b, startBoxes, player);
 		this.start = new State(null, goalSet, board);
-		this.goal = new State(board.lowestReachable(player, goalSet),
+		this.goal = new State(board.lowestReachable(player, startBoxes),
 				startBoxes, board);
 		playerOrigin = player;
 	}

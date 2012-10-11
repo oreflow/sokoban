@@ -244,7 +244,12 @@ final public class State implements Comparable<State> {
 
 	@Override
 	public int compareTo(State other) {
-		return (other.goalCount - this.goalCount) << 20 + (other.distance - this.distance);
+		int temp = (other.goalCount - this.goalCount) << 20 + (other.distance - this.distance);
+		if(temp == 0){
+			return other.player.hashCode() - this.player.hashCode();
+		}else{
+			return temp;
+		}
 	}
 
 }
